@@ -1,0 +1,16 @@
+# One-click deploy config for Render (https://render.com) — free tier.
+# Render reads this automatically and creates the web service for you.
+services:
+  - type: web
+    name: off-page-seo-tool
+    runtime: python
+    plan: free
+    branch: claude/happy-albattani-ZJIEL
+    buildCommand: "echo no build needed"
+    startCommand: "python3 web/server.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      # Add these in the Render dashboard (Environment tab) for LIVE data:
+      # DATAFORSEO_LOGIN
+      # DATAFORSEO_PASSWORD

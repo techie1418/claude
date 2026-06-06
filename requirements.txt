@@ -1,0 +1,2 @@
+# No third-party dependencies — the app uses only the Python standard library.
+# This file exists so cloud hosts (Render, Railway, etc.) detect a Python app.
