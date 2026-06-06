@@ -5,7 +5,18 @@ You give it a website; it asks for your **target location** and **which off-page
 want to run, then uses live SEO data to return a **vetted, ranked list of real target
 sites** (good DA/PA, low spam score) plus ready-to-paste submission and outreach content.
 
-## How to use it
+## Two ways to use it
+
+**A) Local web app (visual, runs at `http://localhost:8000`):**
+
+```bash
+python3 web/server.py        # then open http://localhost:8000
+```
+
+No dependencies to install. Starts in demo mode; add DataForSEO keys to
+`web/.env` for live DA/PA/spam data. See [`web/README.md`](web/README.md).
+
+**B) Claude skill (full interactive flow inside Claude):**
 
 In a Claude session with this repo, just say:
 

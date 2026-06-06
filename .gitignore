@@ -1,0 +1,9 @@
+# Never commit real API credentials
+web/.env
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

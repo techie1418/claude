@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Off-Page SEO Tool</title>
+<style>
+  :root{--bg:#0f1221;--card:#1a1f36;--line:#2a3152;--txt:#e7e9f3;--mut:#9aa3c4;--acc:#6c8cff;--ok:#39d98a;--warn:#ffcf5c;--bad:#ff6b6b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+  header{padding:22px 28px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header h1{font-size:19px;margin:0}
+  .badge{font-size:12px;padding:3px 10px;border-radius:20px;border:1px solid var(--line)}
+  .badge.live{background:rgba(57,217,138,.15);color:var(--ok);border-color:var(--ok)}
+  .badge.demo{background:rgba(255,207,92,.12);color:var(--warn);border-color:var(--warn)}
+  main{max-width:1180px;margin:0 auto;padding:24px 20px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:20px}
+  label{display:block;font-size:13px;color:var(--mut);margin:0 0 6px}
+  input,select{width:100%;padding:11px 12px;border-radius:9px;border:1px solid var(--line);background:#11152a;color:var(--txt);font-size:14px}
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+  .tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:6px}
+  .task{display:flex;gap:9px;align-items:flex-start;background:#11152a;border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer}
+  .task input{width:auto;margin-top:2px}
+  .task b{font-size:13.5px} .task span{font-size:11.5px;color:var(--mut);display:block;margin-top:2px}
+  .row2{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end;margin-top:16px}
+  button{background:var(--acc);color:#fff;border:0;padding:12px 22px;border-radius:9px;font-size:14.5px;font-weight:600;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .meta{display:flex;gap:18px;flex-wrap:wrap;color:var(--mut);font-size:13px;margin:4px 0 14px}
+  .meta b{color:var(--txt)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--mut);font-weight:600;position:sticky;top:0;background:var(--card)}
+  td.l{white-space:normal}
+  .pill{font-size:11px;padding:2px 8px;border-radius:12px;border:1px solid var(--line)}
+  .da{color:var(--ok);font-weight:700} .spam-ok{color:var(--ok)} .spam-hi{color:var(--bad);font-weight:700}
+  .score{font-weight:700}
+  .grp{margin:22px 0 8px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+  a{color:var(--acc)}
+  .hint{font-size:12.5px;color:var(--mut);margin-top:10px;line-height:1.5}
+  .err{color:var(--bad);font-size:13px;margin-top:10px}
+  .right{margin-left:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔗 Off-Page SEO Tool</h1>
+  <span id="mode" class="badge demo">checking…</span>
+  <span class="right hint" style="margin:0">DataForSEO-powered · DA / PA / Spam vetting</span>
+</header>
+
+<main>
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label>1 · Website (the site you want to promote)</label>
+        <input id="site" placeholder="e.g. acme.com" autocomplete="off">
+      </div>
+      <div>
+        <label>2 · Target location</label>
+        <select id="location">
+          <option value="us">United States</option>
+          <option value="uk">United Kingdom</option>
+          <option value="ca">Canada</option>
+          <option value="au">Australia</option>
+          <option value="in">India</option>
+          <option value="ae">UAE / Gulf</option>
+          <option value="de">Germany</option>
+          <option value="fr">France</option>
+          <option value="es">Spain</option>
+          <option value="br">Brazil</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:18px">
+      <label>3 · Off-page task(s) — pick one or more</label>
+      <div class="tasks" id="tasks"></div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>Min DA (Domain Authority)</label>
+        <input id="da_floor" type="number" value="30" min="0" max="100">
+      </div>
+      <div>
+        <label>Max Spam score (%)</label>
+        <input id="spam_ceiling" type="number" value="2" min="0" max="100">
+      </div>
+      <button id="run">Find target sites →</button>
+    </div>
+    <div id="err" class="err"></div>
+  </div>
+
+  <div id="out"></div>
+</main>
+
+<script>
+const TASKS = [
+  ["local","Local SEO & citations","Business listings & local directories for your city"],
+  ["linkbuilding","Link building","Guest posts, niche edits, content placements"],
+  ["profiles","Profiles & Web 2.0","Branded profiles + free blog properties"],
+  ["bookmarking","Social bookmarking","Reddit, Mix, Pinterest, Diigo…"],
+  ["content","Content distribution","Articles, PDF, image & video sharing"],
+  ["forums","Forums & Q&A","Quora, Reddit, Stack Exchange, communities"],
+  ["classifieds","Classifieds","Craigslist, OLX, Gumtree, Locanto…"],
+  ["reviews","Reviews & reputation","Trustpilot, G2, Capterra, Glassdoor"],
+];
+const tw = document.getElementById('tasks');
+TASKS.forEach(([id,name,desc])=>{
+  const l=document.createElement('label'); l.className='task';
+  l.innerHTML=`<input type="checkbox" value="${id}" ${id==='local'?'checked':''}><span><b>${name}</b><span>${desc}</span></span>`;
+  tw.appendChild(l);
+});
+
+fetch('/api/status').then(r=>r.json()).then(s=>{
+  const m=document.getElementById('mode');
+  if(s.mode==='live'){m.textContent='LIVE · '+s.provider;m.className='badge live';}
+  else{m.textContent='DEMO MODE (add API keys for live data)';m.className='badge demo';}
+});
+
+const spamClass=s=> s<=2?'spam-ok':'spam-hi';
+function tableFor(rows){
+  let h=`<table><thead><tr>
+    <th>#</th><th>Target site</th><th>Submit URL</th><th>DA</th><th>PA</th><th>Spam%</th>
+    <th>Type</th><th>Dofollow</th><th>Relevance</th><th>Cost</th><th>Difficulty</th><th>Score</th></tr></thead><tbody>`;
+  rows.forEach((r,i)=>{ h+=`<tr>
+    <td>${i+1}</td>
+    <td class="l"><b>${r.site}</b></td>
+    <td class="l"><a href="${r.submit_url}" target="_blank" rel="noopener">open ↗</a></td>
+    <td class="da">${r.da}</td><td>${r.pa}</td>
+    <td class="${spamClass(r.spam)}">${r.spam}%</td>
+    <td><span class="pill">${r.type}</span></td>
+    <td>${r.dofollow?'✅':'—'}</td>
+    <td>${r.relevance}</td><td>${r.cost}</td><td>${r.difficulty}</td>
+    <td class="score">${r.score}</td></tr>`; });
+  return h+'</tbody></table>';
+}
+
+document.getElementById('run').onclick=async()=>{
+  const err=document.getElementById('err'); err.textContent='';
+  const site=document.getElementById('site').value.trim();
+  const tasks=[...document.querySelectorAll('#tasks input:checked')].map(c=>c.value);
+  if(!site){err.textContent='Enter a website first.';return;}
+  if(!tasks.length){err.textContent='Pick at least one off-page task.';return;}
+  const btn=document.getElementById('run'); btn.disabled=true; btn.textContent='Analyzing…';
+  try{
+    const res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({site,location:document.getElementById('location').value,tasks,
+        da_floor:+document.getElementById('da_floor').value, spam_ceiling:+document.getElementById('spam_ceiling').value})});
+    const d=await res.json();
+    if(!res.ok){err.textContent=d.error||'error';return;}
+    render(d);
+  }catch(e){err.textContent=String(e);}
+  finally{btn.disabled=false; btn.textContent='Find target sites →';}
+};
+
+let LAST=null;
+function render(d){
+  LAST=d;
+  const pass=d.rows.filter(r=>r.passes);
+  const first=pass.filter(r=>r.score>=65), good=pass.filter(r=>r.score>=45&&r.score<65), opt=pass.filter(r=>r.score<45);
+  const rejected=d.rows.filter(r=>!r.passes);
+  let h=`<div class="card">
+    <div class="meta">
+      <span>Site: <b>${d.site}</b></span>
+      <span>Location: <b>${d.location.toUpperCase()}</b></span>
+      <span>Tasks: <b>${d.tasks.join(', ')}</b></span>
+      <span>Mode: <b>${d.mode.toUpperCase()}</b></span>
+      <span>Passing filter (DA≥${d.da_floor}, Spam≤${d.spam_ceiling}%): <b>${pass.length}/${d.count}</b></span>
+      <button class="ghost right" onclick="exportCsv()">⬇ Export CSV</button>
+    </div>
+    ${d.note?`<div class="err">${d.note}</div>`:''}`;
+  if(first.length){h+=`<div class="grp">🚀 Do first (score ≥ 65)</div>`+tableFor(first);}
+  if(good.length){h+=`<div class="grp">👍 Worthwhile (45–64)</div>`+tableFor(good);}
+  if(opt.length){h+=`<div class="grp">🟡 Optional (&lt; 45)</div>`+tableFor(opt);}
+  if(rejected.length){h+=`<div class="grp">🚫 Filtered out (below DA floor or over spam ceiling)</div>`+tableFor(rejected);}
+  h+=`<div class="hint">DA = Domain Authority · PA ≈ Page Authority · Spam% from DataForSEO (live) or estimated (demo).
+     Submission is manual & white-hat — open each "Submit URL", create your listing/profile/post, and use the anchor-text mix in the skill's templates.md. </div></div>`;
+  document.getElementById('out').innerHTML=h;
+  window.scrollTo({top:document.getElementById('out').offsetTop-10,behavior:'smooth'});
+}
+
+function exportCsv(){
+  if(!LAST)return;
+  const cols=['site','submit_url','da','pa','spam','type','dofollow','relevance','cost','difficulty','score','passes'];
+  let csv=cols.join(',')+'\n';
+  LAST.rows.forEach(r=>{csv+=cols.map(c=>JSON.stringify(r[c]??'')).join(',')+'\n';});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`offpage-${LAST.site}-${LAST.location}.csv`; a.click();
+}
+</script>
+</body>
+</html>
